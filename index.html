@@ -27,21 +27,19 @@
 </head>
 
 <body>
-    <!-- <a-scene>
-        <a-entity gltf-model="../assets/animacion.glb" scale="2 2 2" position="0 0 -3" animation-mixer></a-entity>
-    </a-scene> -->
     <script>
         // Crear la escena, la cámara y el renderizador
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         var renderer = new THREE.WebGLRenderer();
-
+        
         // Configurar el tamaño del renderizador y agregarlo al cuerpo del HTML
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
-
+        
         // Agregar una luz a la escena
         var light = new THREE.AmbientLight(0xffffff); // Luz blanca ambiental
+        scene.background = new THREE.Color(0xffffff);
         scene.add(light);
 
         // Crear la variable mixer
@@ -104,7 +102,6 @@
                 console.error(error);
             });
         });
-
     </script>
 </body>
 
