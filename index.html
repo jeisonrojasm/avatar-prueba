@@ -46,9 +46,10 @@
         var mixer = new THREE.AnimationMixer(scene);
 
         // Cargar los archivos glb
-        var loader = new THREE.GLTFLoader();
-        loader.load('./assets/animacion.glb', function (animacion) {
-            loader.load('./assets/modelo.glb', function (modelo) {
+        var loaderAnimacion = new THREE.GLTFLoader();
+        var loaderModelo = new THREE.GLTFLoader();
+        loaderAnimacion.load('./assets/animacion.glb', function (animacion) {
+            loaderModelo.load('./assets/modelo.glb', function (modelo) {
 
                 modelo.scene.scale.set(3, 3, 3);
 
