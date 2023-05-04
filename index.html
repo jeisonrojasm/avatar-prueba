@@ -6,9 +6,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <!-- <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script> -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r126/three.min.js"
         integrity="sha512-n8IpKWzDnBOcBhRlHirMZOUvEq2bLRMuJGjuVqbzUJwtTsgwOgK5aS0c1JA647XWYfqvXve8k3PtZdzpipFjgg=="
         crossorigin="anonymous"></script>
@@ -19,7 +19,7 @@
     <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/FBXLoader.js"></script>
     <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
 
-    <script src="https://cdn.rawgit.com/mrdoob/three.js/r118/examples/js/exporters/GLTFExporter.js"></script>
+    <script src="https://cdn.rawgit.com/mrdoob/three.js/r126/examples/js/exporters/GLTFExporter.js"></script>
     <style>
         body {
             margin: 0;
@@ -29,22 +29,35 @@
 </head>
 
 <body>
+    <a-scene id="scene" cursor="rayOrigin: mouse"
+        arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false;">
+        <a-entity gltf-model="./assets/modelo.glb"></a-entity>
+    </a-scene>
+
     <script>
+        // AFRAME.registerComponent('carga-modelo', {
+
+        //     init: function () {
+        //         var self = this;
+        //         this.loader = new THREE.GLTFLoader();
+        //         this.model = null;
+
+        //         // Wait for model to load.
+        //         this.loader.load('./assets/modelo.glb', function gltfLoaded(gltfModel) {
+        //             self.model = gltfModel.scene || gltfModel.scenes[0];
+        //             self.el.setObject3D('mesh', self.model);
+        //             self.el.emit('model-loaded', { format: 'gltf', model: self.model });
+        //         }, undefined, function gltfFailed(error) {
+        //             console.error(error);
+        //         });
+        //     }
+        // });
+
+
+
+
         // Crear la escena, la cámara y el renderizador
-        var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        var renderer = new THREE.WebGLRenderer({ alpha: true });
-
-        // Configurar el tamaño del renderizador y agregarlo al cuerpo del HTML
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-
-        // Agregar una luz a la escena
-        var light = new THREE.AmbientLight(0xffffff); // Luz blanca ambiental
-        scene.add(light);
-
-        // Crear la variable mixer
-        // var mixer = new THREE.AnimationMixer(scene);
+        var scene = document.querySelector('a-scene').object3D;
 
         // Cargar los archivos glb
         var loaderAnimacion = new THREE.GLTFLoader();
@@ -53,7 +66,6 @@
             loaderModelo.load('./assets/modelo.glb', function (modelo) {
 
                 modelo.scene.scale.set(4, 4, 4);
-                camera.position.set(0, 0, 10);
 
                 for (let i = 0; i < animacion.animations[0].tracks.length; i++) {
                     const str = animacion.animations[0].tracks[i].name;
@@ -70,13 +82,18 @@
                 // Agregar las animaciones al modelo
                 modelo.animations[0] = animation;
 
-                console.log(modelo);
+                const animations = modelo.animations;
 
                 // Reproducir la animación en bucle
                 var mixer = new THREE.AnimationMixer(modelo.scene);
                 var actionAnimacion = mixer.clipAction(animacion.animations[0]);
                 actionAnimacion.play();
                 actionAnimacion.setLoop(THREE.LoopRepeat);
+
+                const entity = document.querySelector('a-entity').object3D;
+                console.log(entity);
+                entity.add(modelo.scene);
+                console.log(entity);
 
                 // Agregar el modelo a la escena
                 scene.add(modelo.scene);
@@ -87,8 +104,6 @@
 
                     // Actualizar el objeto Mixer con el tiempo transcurrido
                     mixer.update(clock.getDelta());
-
-                    renderer.render(scene, camera);
                 }
                 animate();
 
@@ -97,8 +112,7 @@
 
                 // Exporta el modelo
                 exporter.parse(modelo.scene, function (result) {
-                    const url = URL.createObjectURL(new Blob([result], { type: 'model/gltf-binary' }));
-                    console.log(result);
+                    const url = URL.createObjectURL(new Blob([result], { type: 'application/octet-stream' }));
                     // Crea un elemento <a> para descargar el archivo
                     var link = document.createElement('a');
                     link.href = url;
@@ -106,7 +120,7 @@
                     document.body.appendChild(link);
 
                     // Descarga el archivo
-                    link.click();
+                    // link.click();
 
                     // Elimina el elemento <a>
                     document.body.removeChild(link);
@@ -121,7 +135,6 @@
             });
         });
     </script>
-    
 </body>
 
 </html>
