@@ -32,11 +32,11 @@
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         var renderer = new THREE.WebGLRenderer();
-        
+
         // Configurar el tamaño del renderizador y agregarlo al cuerpo del HTML
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
-        
+
         // Agregar una luz a la escena
         var light = new THREE.AmbientLight(0xffffff); // Luz blanca ambiental
         scene.background = new THREE.Color(0xffffff);
@@ -49,6 +49,8 @@
         var loader = new THREE.GLTFLoader();
         loader.load('./assets/animacion.glb', function (animacion) {
             loader.load('./assets/modelo.glb', function (modelo) {
+
+                modelo.scene.scale.set(3, 3, 3);
 
                 // Obtener las animaciones de cada archivo glb
                 var animacionesModelo = modelo.animations;
@@ -87,6 +89,7 @@
                 }
 
                 camera.position.z = 5;
+                camera.position.y = 2;
                 var clock = new THREE.Clock();
                 function animate() {
                     requestAnimationFrame(animate);
