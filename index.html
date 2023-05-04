@@ -18,21 +18,6 @@
     <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.0/dist/aframe-extras.min.js"></script>
     <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/FBXLoader.js"></script>
     <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
-    <!-- <script>
-        const loader = new THREE.GLTFLoader();
-
-        loader.load('../assets/animacion.glb', function (animacion) {
-            loader.load('../assets/modelo.glb', function (modelo) {
-                console.log(animacion);
-                console.log(modelo);
-                const scene1 = document.querySelector('body').children[0].object3D;
-                const scene2 = new THREE.Scene();
-                console.log('ESCENA 1', scene1);
-                console.log('ESCENA 2', scene2);
-
-            })
-        })
-    </script> -->
     <style>
         body {
             margin: 0;
@@ -59,40 +44,67 @@
         var light = new THREE.AmbientLight(0xffffff); // Luz blanca ambiental
         scene.add(light);
 
-        // Cargar el modelo GLB
-        var loader = new THREE.GLTFLoader();
-        loader.load('./assets/modelo.glb', function (gltf) {
-            // Agregar el modelo a la escena
-            scene.add(gltf.scene);
+        // Crear la variable mixer
+        var mixer = new THREE.AnimationMixer(scene);
 
-            // Obtener la animación del modelo
-            var animations = gltf.animations;
-            if (animations && animations.length) {
-                // Crear el objeto Mixer y añadir la animación al mismo
-                var mixer = new THREE.AnimationMixer(gltf.scene);
-                var animation = mixer.clipAction(animations[0]);
+        // Cargar los archivos glb
+        var loader = new THREE.GLTFLoader();
+        loader.load('./assets/animacion.glb', function (animacion) {
+            loader.load('./assets/modelo.glb', function (modelo) {
+
+                // Obtener las animaciones de cada archivo glb
+                var animacionesModelo = modelo.animations;
+                var animacionesAnimacion = animacion.animations;
+
+                // Agregar el modelo a la escena
+                scene.add(modelo.scene);
 
                 // Reproducir la animación en bucle
-                animation.play();
-                animation.setLoop(THREE.LoopRepeat);
-            }
+                var actionAnimacion = mixer.clipAction(animacionesAnimacion[0]);
+                actionAnimacion.play();
+                actionAnimacion.setLoop(THREE.LoopRepeat);
 
-            // Ubicar la cámara y renderizar la escena
-            camera.position.z = 5;
-            // Crear la variable clock
-            var clock = new THREE.Clock();
-            function animate() {
-                requestAnimationFrame(animate);
+                // Obtener el objeto Mixer del modelo
+                var mixerModelo = new THREE.AnimationMixer(modelo.scene);
 
-                // Actualizar el objeto Mixer con el tiempo transcurrido
-                if (mixer) mixer.update(clock.getDelta());
+                // Mezclar las animaciones del modelo y la animación cargada
+                if (animacionesModelo && animacionesModelo.length) {
+                    var actionModelo = mixerModelo.clipAction(animacionesModelo[0]);
+                    actionModelo.play();
+                    actionModelo.setLoop(THREE.LoopRepeat);
+                    mixer = THREE.AnimationMixer(scene);
+                    mixer.addEventListener('loop', function (event) {
+                        if (event.action === actionModelo) {
+                            mixer.stopAllAction();
+                            mixer.clipAction(animacionesAnimacion[0]).play();
+                        }
+                    });
+                    mixer = THREE.AnimationMixer(scene);
+                    mixer.addEventListener('loop', function (event) {
+                        if (event.action === actionAnimacion) {
+                            mixer.stopAllAction();
+                            mixerModelo.clipAction(animacionesModelo[0]).play();
+                        }
+                    });
+                }
 
-                renderer.render(scene, camera);
-            }
-            animate();
-        }, undefined, function (error) {
-            console.error(error);
+                camera.position.z = 5;
+                var clock = new THREE.Clock();
+                function animate() {
+                    requestAnimationFrame(animate);
+
+                    // Actualizar el objeto Mixer con el tiempo transcurrido
+                    mixer.update(clock.getDelta());
+
+                    renderer.render(scene, camera);
+                }
+                animate();
+
+            }, undefined, function (error) {
+                console.error(error);
+            });
         });
+
     </script>
 </body>
 
