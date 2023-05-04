@@ -46,55 +46,54 @@
         <a-entity gltf-model="../assets/animacion.glb" scale="2 2 2" position="0 0 -3" animation-mixer></a-entity>
     </a-scene> -->
     <script>
-		// Crear la escena, la cámara y el renderizador
-		var scene = new THREE.Scene();
-		var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-		var renderer = new THREE.WebGLRenderer();
+        // Crear la escena, la cámara y el renderizador
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        var renderer = new THREE.WebGLRenderer();
 
-		// Configurar el tamaño del renderizador y agregarlo al cuerpo del HTML
-		renderer.setSize( window.innerWidth, window.innerHeight );
-		document.body.appendChild( renderer.domElement );
+        // Configurar el tamaño del renderizador y agregarlo al cuerpo del HTML
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-		// Agregar una luz a la escena
-		var light = new THREE.AmbientLight( 0xffffff ); // Luz blanca ambiental
-		scene.add( light );
+        // Agregar una luz a la escena
+        var light = new THREE.AmbientLight(0xffffff); // Luz blanca ambiental
+        scene.add(light);
 
-		// Cargar el modelo GLB
-		var loader = new THREE.GLTFLoader();
-		loader.load( './assets/modelo.glb', function ( gltf ) {
-			// Agregar el modelo a la escena
-			scene.add( gltf.scene );
+        // Cargar el modelo GLB
+        var loader = new THREE.GLTFLoader();
+        loader.load('./assets/modelo.glb', function (gltf) {
+            // Agregar el modelo a la escena
+            scene.add(gltf.scene);
 
-			// Obtener la animación del modelo
-			var animations = gltf.animations;
-			if ( animations && animations.length ) {
-				// Crear el objeto Mixer y añadir la animación al mismo
-				var mixer = new THREE.AnimationMixer( gltf.scene );
-				var animation = mixer.clipAction( animations[ 0 ] );
+            // Obtener la animación del modelo
+            var animations = gltf.animations;
+            if (animations && animations.length) {
+                // Crear el objeto Mixer y añadir la animación al mismo
+                var mixer = new THREE.AnimationMixer(gltf.scene);
+                var animation = mixer.clipAction(animations[0]);
 
-				// Reproducir la animación en bucle
-				animation.play();
-				animation.setLoop( THREE.LoopRepeat );
-			}
+                // Reproducir la animación en bucle
+                animation.play();
+                animation.setLoop(THREE.LoopRepeat);
+            }
 
-			// Ubicar la cámara y renderizar la escena
-			camera.position.z = 5;
-			function animate() {
-				requestAnimationFrame( animate );
+            // Ubicar la cámara y renderizar la escena
+            camera.position.z = 5;
+            // Crear la variable clock
+            var clock = new THREE.Clock();
+            function animate() {
+                requestAnimationFrame(animate);
 
-				// Actualizar el objeto Mixer con el tiempo transcurrido
-				if (mixer) mixer.update( clock.getDelta() );
+                // Actualizar el objeto Mixer con el tiempo transcurrido
+                if (mixer) mixer.update(clock.getDelta());
 
-				renderer.render( scene, camera );
-			}
-			animate();
-		}, undefined, function ( error ) {
-			console.error( error );
-		} );
-
-		// Crear la variable clock
-		var clock = new THREE.Clock();
-	</script>
+                renderer.render(scene, camera);
+            }
+            animate();
+        }, undefined, function (error) {
+            console.error(error);
+        });
+    </script>
 </body>
 
 </html>
