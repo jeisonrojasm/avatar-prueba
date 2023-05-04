@@ -18,6 +18,8 @@
     <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.0/dist/aframe-extras.min.js"></script>
     <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/FBXLoader.js"></script>
     <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <script src="https://cdn.rawgit.com/mrdoob/three.js/r118/examples/js/exporters/GLTFExporter.js"></script>
     <style>
         body {
             margin: 0;
@@ -42,54 +44,43 @@
         scene.add(light);
 
         // Crear la variable mixer
-        var mixer = new THREE.AnimationMixer(scene);
+        // var mixer = new THREE.AnimationMixer(scene);
 
         // Cargar los archivos glb
         var loaderAnimacion = new THREE.GLTFLoader();
         var loaderModelo = new THREE.GLTFLoader();
-        loaderAnimacion.load('./assets/animacion.glb', function (animacion) {
+        loaderAnimacion.load('./assets/dancing.glb', function (animacion) {
             loaderModelo.load('./assets/modelo.glb', function (modelo) {
 
-                modelo.scene.scale.set(3, 3, 3);
+                modelo.scene.scale.set(4, 4, 4);
+                camera.position.set(0, 0, 10);
 
-                // Obtener las animaciones de cada archivo glb
-                var animacionesModelo = modelo.animations;
-                var animacionesAnimacion = animacion.animations;
+                for (let i = 0; i < animacion.animations[0].tracks.length; i++) {
+                    const str = animacion.animations[0].tracks[i].name;
+                    const newStr = str.replace('mixamorig', '');
+                    animacion.animations[0].tracks[i].name = newStr;
+                }
+
+                // Extraer las animaciones del modelo animado y guardarlas en una instancia de AnimationClip
+                const nombreAnimacion = animacion.animations[0].name;
+                const duracionAnimacion = animacion.animations[0].duration;
+                const tracksAnimacion = animacion.animations[0].tracks;
+                const animation = new THREE.AnimationClip(nombreAnimacion, duracionAnimacion, tracksAnimacion);
+
+                // Agregar las animaciones al modelo
+                modelo.animations[0] = animation;
+
+                console.log(modelo);
+
+                // Reproducir la animación en bucle
+                var mixer = new THREE.AnimationMixer(modelo.scene);
+                var actionAnimacion = mixer.clipAction(animacion.animations[0]);
+                actionAnimacion.play();
+                actionAnimacion.setLoop(THREE.LoopRepeat);
 
                 // Agregar el modelo a la escena
                 scene.add(modelo.scene);
 
-                // Reproducir la animación en bucle
-                var actionAnimacion = mixer.clipAction(animacionesAnimacion[0]);
-                actionAnimacion.play();
-                actionAnimacion.setLoop(THREE.LoopRepeat);
-
-                // Obtener el objeto Mixer del modelo
-                var mixerModelo = new THREE.AnimationMixer(modelo.scene);
-
-                // Mezclar las animaciones del modelo y la animación cargada
-                if (animacionesModelo && animacionesModelo.length) {
-                    var actionModelo = mixerModelo.clipAction(animacionesModelo[0]);
-                    actionModelo.play();
-                    actionModelo.setLoop(THREE.LoopRepeat);
-                    mixer = THREE.AnimationMixer(scene);
-                    mixer.addEventListener('loop', function (event) {
-                        if (event.action === actionModelo) {
-                            mixer.stopAllAction();
-                            mixer.clipAction(animacionesAnimacion[0]).play();
-                        }
-                    });
-                    mixer = THREE.AnimationMixer(scene);
-                    mixer.addEventListener('loop', function (event) {
-                        if (event.action === actionAnimacion) {
-                            mixer.stopAllAction();
-                            mixerModelo.clipAction(animacionesModelo[0]).play();
-                        }
-                    });
-                }
-
-                camera.position.z = 5;
-                camera.position.y = 2;
                 var clock = new THREE.Clock();
                 function animate() {
                     requestAnimationFrame(animate);
@@ -101,11 +92,36 @@
                 }
                 animate();
 
+                // Crea una instancia de GLTFExporter
+                var exporter = new THREE.GLTFExporter();
+
+                // Exporta el modelo
+                exporter.parse(modelo.scene, function (result) {
+                    const url = URL.createObjectURL(new Blob([result], { type: 'model/gltf-binary' }));
+                    console.log(result);
+                    // Crea un elemento <a> para descargar el archivo
+                    var link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'nuevo_nombre.glb';
+                    document.body.appendChild(link);
+
+                    // Descarga el archivo
+                    link.click();
+
+                    // Elimina el elemento <a>
+                    document.body.removeChild(link);
+
+                    // Liberar la memoria de la URL
+                    URL.revokeObjectURL(url);
+
+                }, { binary: true });
+
             }, undefined, function (error) {
                 console.error(error);
             });
         });
     </script>
+    
 </body>
 
 </html>
