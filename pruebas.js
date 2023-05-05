@@ -1,27 +1,21 @@
-function animate() {
-    requestAnimationFrame(animate);
+AFRAME.registerComponent('gltf-model', {
+    schema: {
+        src: { type: 'asset' },
+        crossorigin: { default: '' }
+    },
 
-    // Actualizar el objeto Mixer con el tiempo transcurrido
-    mixer.update(clock.getDelta());
+    init: function () {
+        this.loaderModelo = new THREE.GLTFLoader();
+        this.model = null;
+        this.materials = null;
 
-    renderer.render(scene, camera);
-
-    // Crear el exportador y generar el archivo GLB
-    var exporter = new THREE.GLTFExporter();
-    exporter.parse(scene, function (glb) {
-        var blob = new Blob([glb], { type: 'application/octet-stream' });
-        var url = URL.createObjectURL(blob);
-
-        // Crear un enlace para descargar el archivo
-        var link = document.createElement('a');
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.href = url;
-        link.download = 'nuevo-modelo.glb';
-        link.click();
-
-        // Liberar los recursos
-        URL.revokeObjectURL(url);
-        document.body.removeChild(link);
-    }, {});
-}
+        // Wait for model to load.
+        this.loaderModelo.load(this.data.src, function gltfLoaded(modelo) {
+            this.model = modelo.scene || modelo.scenes[0];
+            this.el.setObject3D('mesh', this.model);
+            this.el.emit('model-loaded', { format: 'gltf', model: this.model });
+        }, undefined, function gltfFailed(error) {
+            console.error(error);
+        });
+    }
+});
