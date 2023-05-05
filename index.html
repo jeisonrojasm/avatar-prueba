@@ -44,24 +44,50 @@
                 type: "model"
             },
             init: function () {
-                this.model = null, this.loader = new THREE.GLTFLoader
+                this.model = null;
+                this.loader = new THREE.GLTFLoader
             },
             update: function () {
                 var e = this,
                     o = this.el,
                     t = this.data;
-                t && (this.remove(), this.loader.load(t, function (t) {
-                    e.model = t.scene || t.scenes[0], e.model.animations = t.animations, o.setObject3D("mesh", e.model), o.emit("model-loaded", {
-                        format: "gltf",
-                        model: e.model
+                var loaderAnimacion = new THREE.GLTFLoader();
+                var loaderModelo = this.loader;
+                t && (this.remove(),
+                    loaderAnimacion.load('./assets/dancing.glb', function (animacion) {
+                        loaderModelo.load(t, function (modelo) {
+
+                            modelo.scene.scale.set(4, 4, 4);
+
+                            for (let i = 0; i < animacion.animations[0].tracks.length; i++) {
+                                const str = animacion.animations[0].tracks[i].name;
+                                const newStr = str.replace('mixamorig', '');
+                                animacion.animations[0].tracks[i].name = newStr;
+                            }
+
+                            // Extraer las animaciones del modelo animado y guardarlas en una instancia de AnimationClip
+                            const nombreAnimacion = animacion.animations[0].name;
+                            const duracionAnimacion = animacion.animations[0].duration;
+                            const tracksAnimacion = animacion.animations[0].tracks;
+                            const animation = new THREE.AnimationClip(nombreAnimacion, duracionAnimacion, tracksAnimacion);
+
+                            // Agregar las animaciones al modelo
+                            modelo.animations[0] = animation;
+
+                            e.model = modelo.scene || modelo.scenes[0], e.model.animations = modelo.animations, o.setObject3D("mesh", e.model), o.emit("model-loaded", {
+                                format: "gltf",
+                                model: e.model
+                            })
+                        }, void 0, function (e) {
+                            var r = e && e.message ? e.message : "Failed to load glTF model";
+                            warn(r), o.emit("model-error", {
+                                format: "gltf",
+                                src: modelo
+                            })
+                        }
+                        )
                     })
-                }, void 0, function (e) {
-                    var r = e && e.message ? e.message : "Failed to load glTF model";
-                    warn(r), o.emit("model-error", {
-                        format: "gltf",
-                        src: t
-                    })
-                }))
+                )
             },
             remove: function () {
                 this.model && this.el.removeObject3D("mesh")
@@ -74,10 +100,12 @@
     <a-scene id="scene" cursor="rayOrigin: mouse"
         arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false;">
         <a-marker type="pattern" preset="custom" url="../assets/Marker.patt" ar-tracking>
-            <a-entity modelo-gltf="./assets/animacion.glb" animation-mixer></a-entity>
+            <a-entity modelo-gltf="./assets/modelo.glb" animation-mixer></a-entity>
         </a-marker>
 
     </a-scene>
+
+
 
     <script>
         // Crear la escena, la cámara y el renderizador
